@@ -86,4 +86,14 @@ final class SettingsRepository
             'debug_enabled' => ! empty($input['debug_enabled']),
         ];
     }
+
+    public function isApiTokenDefinedInConfig(): bool
+    {
+        return defined('BRICKS_GHL_CONNECTOR_API_TOKEN');
+    }
+
+    public function isLocationIdDefinedInConfig(): bool
+    {
+        return defined('BRICKS_GHL_CONNECTOR_LOCATION_ID');
+    }
 }

@@ -54,9 +54,16 @@ final class SettingsPage
         $settings = $this->settings->all();
         $option = SettingsRepository::OPTION_NAME;
         $tokenConfigured = $this->settings->apiToken() !== '';
+        $tokenDefinedInConfig = $this->settings->isApiTokenDefinedInConfig();
+        $locationDefinedInConfig = $this->settings->isLocationIdDefinedInConfig();
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Bricks GHL Connector', 'bricks-ghl-connector'); ?></h1>
+            <?php if ($tokenDefinedInConfig || $locationDefinedInConfig) : ?>
+                <div class="notice notice-info inline">
+                    <p><?php echo esc_html__('One or more GHL credentials are defined in wp-config.php and override the saved settings below.', 'bricks-ghl-connector'); ?></p>
+                </div>
+            <?php endif; ?>
             <form method="post" action="options.php">
                 <?php settings_fields('bghl_connector'); ?>
                 <table class="form-table" role="presentation">
@@ -73,8 +80,12 @@ final class SettingsPage
                                 value=""
                                 autocomplete="new-password"
                                 placeholder="<?php echo $tokenConfigured ? esc_attr__('Token is configured. Leave empty to keep it.', 'bricks-ghl-connector') : ''; ?>"
+                                <?php disabled($tokenDefinedInConfig); ?>
                             >
                             <p class="description"><?php echo esc_html__('Use the sub-account API key or private integration token for this WordPress site.', 'bricks-ghl-connector'); ?></p>
+                            <?php if ($tokenDefinedInConfig) : ?>
+                                <p class="description"><?php echo esc_html__('The API token is currently loaded from BRICKS_GHL_CONNECTOR_API_TOKEN in wp-config.php.', 'bricks-ghl-connector'); ?></p>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
@@ -82,7 +93,10 @@ final class SettingsPage
                             <label for="bghl-location-id"><?php echo esc_html__('Location ID', 'bricks-ghl-connector'); ?></label>
                         </th>
                         <td>
-                            <input id="bghl-location-id" class="regular-text" type="text" name="<?php echo esc_attr($option); ?>[location_id]" value="<?php echo esc_attr((string) $settings['location_id']); ?>">
+                            <input id="bghl-location-id" class="regular-text" type="text" name="<?php echo esc_attr($option); ?>[location_id]" value="<?php echo esc_attr((string) $settings['location_id']); ?>" <?php disabled($locationDefinedInConfig); ?>>
+                            <?php if ($locationDefinedInConfig) : ?>
+                                <p class="description"><?php echo esc_html__('The Location ID is currently loaded from BRICKS_GHL_CONNECTOR_LOCATION_ID in wp-config.php.', 'bricks-ghl-connector'); ?></p>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
