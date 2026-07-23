@@ -79,6 +79,19 @@ final class FormSubmitHandler
         );
 
         $mapped = $this->mapper->map($submittedFields, $mappings);
+        $payloadErrors = $this->validateMappedContactFields($mapped['standard']);
+
+        if ($payloadErrors !== []) {
+            $this->logger->error('GHL form action mapped payload validation failed.', [
+                'errors' => $payloadErrors,
+                'submitted_field_keys' => array_keys($submittedFields),
+                'mapped_standard_fields' => array_keys($mapped['standard']),
+            ]);
+            $this->maybeSetFormError($form, $formSettings, implode(' ', $payloadErrors));
+
+            return;
+        }
+
         $payload = $this->payloadBuilder->build($locationId, $source, $tags, $mapped);
 
         try {
@@ -91,6 +104,24 @@ final class FormSubmitHandler
             $this->logger->error('GHL contact creation failed.', ['message' => $exception->getMessage()]);
             $this->maybeSetFormError($form, $formSettings, 'Could not submit the form to GoHighLevel.');
         }
+    }
+
+    /**
+     * @param array<string, string> $standardFields
+     * @return string[]
+     */
+    private function validateMappedContactFields(array $standardFields): array
+    {
+        $hasEmail = ! empty($standardFields['email']);
+        $hasPhone = ! empty($standardFields['phone']);
+        $hasName = ! empty($standardFields['name']);
+        $hasFirstAndLastName = ! empty($standardFields['firstName']) && ! empty($standardFields['lastName']);
+
+        if ($hasEmail || $hasPhone || $hasName || $hasFirstAndLastName) {
+            return [];
+        }
+
+        return ['The GHL payload must contain a submitted email, phone, full name, or both first and last name.'];
     }
 
     /**

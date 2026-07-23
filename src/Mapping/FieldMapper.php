@@ -19,11 +19,17 @@ final class FieldMapper
         foreach ($mappings as $mapping) {
             $bricksFieldId = trim((string) ($mapping['bricksFieldId'] ?? ''));
 
-            if ($bricksFieldId === '' || ! array_key_exists($bricksFieldId, $submittedFields)) {
+            if ($bricksFieldId === '') {
                 continue;
             }
 
-            $value = $this->stringValue($submittedFields[$bricksFieldId]);
+            $submittedKey = $this->resolveSubmittedFieldKey($bricksFieldId, $submittedFields);
+
+            if ($submittedKey === null) {
+                continue;
+            }
+
+            $value = $this->stringValue($submittedFields[$submittedKey]);
 
             if ($value === '') {
                 continue;
@@ -53,6 +59,29 @@ final class FieldMapper
             'standard' => $standard,
             'customFields' => $customFields,
         ];
+    }
+
+    /**
+     * Bricks stores submitted field values under "form-field-{fieldId}", while
+     * builder controls may store either the raw field ID or the full submitted key.
+     *
+     * @param array<string, mixed> $submittedFields
+     */
+    private function resolveSubmittedFieldKey(string $bricksFieldId, array $submittedFields): ?string
+    {
+        $candidates = [$bricksFieldId];
+
+        if (strpos($bricksFieldId, 'form-field-') !== 0) {
+            $candidates[] = 'form-field-' . $bricksFieldId;
+        }
+
+        foreach ($candidates as $candidate) {
+            if (array_key_exists($candidate, $submittedFields)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     /** @param mixed $value */
