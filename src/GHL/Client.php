@@ -51,16 +51,17 @@ final class Client
         $statusCode = (int) wp_remote_retrieve_response_code($response);
         $body = (string) wp_remote_retrieve_body($response);
         $decoded = json_decode($body, true);
+        $decodedBody = is_array($decoded) ? $decoded : [];
 
         $this->logger->debug('GHL Contacts API response received.', [
             'status_code' => $statusCode,
-            'body' => is_array($decoded) ? $decoded : $body,
+            'body' => $decodedBody !== [] ? $decodedBody : $body,
         ]);
 
         if ($statusCode < 200 || $statusCode >= 300) {
-            throw new ApiException(sprintf('GHL Contacts API returned HTTP %d.', $statusCode));
+            throw new ApiException(sprintf('GHL Contacts API returned HTTP %d.', $statusCode), $statusCode, $decodedBody);
         }
 
-        return is_array($decoded) ? $decoded : [];
+        return $decodedBody;
     }
 }

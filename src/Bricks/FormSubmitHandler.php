@@ -57,11 +57,11 @@ final class FormSubmitHandler
         $locationId = $this->settings->locationId();
 
         if ($this->settings->apiToken() === '') {
-            $errors[] = 'GHL API token is not configured.';
+            $errors[] = __('GHL API token is not configured.', 'bricks-ghl-connector');
         }
 
         if ($locationId === '') {
-            $errors[] = 'GHL Location ID is not configured.';
+            $errors[] = __('GHL Location ID is not configured.', 'bricks-ghl-connector');
         }
 
         if ($errors !== []) {
@@ -102,8 +102,23 @@ final class FormSubmitHandler
             ]);
         } catch (ApiException $exception) {
             $this->logger->error('GHL contact creation failed.', ['message' => $exception->getMessage()]);
-            $this->maybeSetFormError($form, $formSettings, 'Could not submit the form to GoHighLevel.');
+            $this->maybeSetFormError($form, $formSettings, $this->publicErrorMessageForException($exception));
         }
+    }
+
+    private function publicErrorMessageForException(ApiException $exception): string
+    {
+        if (! $exception->isDuplicateContactError()) {
+            return __('Could not submit the form to GoHighLevel.', 'bricks-ghl-connector');
+        }
+
+        $matchingField = $exception->duplicateMatchingField();
+
+        if ($matchingField === 'phone') {
+            return __('This phone number is already subscribed.', 'bricks-ghl-connector');
+        }
+
+        return __('This email address is already subscribed.', 'bricks-ghl-connector');
     }
 
     /**
@@ -121,7 +136,7 @@ final class FormSubmitHandler
             return [];
         }
 
-        return ['The GHL payload must contain a submitted email, phone, full name, or both first and last name.'];
+        return [__('The GHL payload must contain a submitted email, phone, full name, or both first and last name.', 'bricks-ghl-connector')];
     }
 
     /**

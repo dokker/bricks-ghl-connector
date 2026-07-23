@@ -20,7 +20,10 @@ final class MappingValidator
             $bricksFieldId = trim((string) ($mapping['bricksFieldId'] ?? ''));
 
             if ($bricksFieldId === '') {
-                $errors[] = sprintf('Mapping row %d is missing a Bricks field.', $index + 1);
+                $errors[] = sprintf(
+                    __('Mapping row %d is missing a Bricks field.', 'bricks-ghl-connector'),
+                    $index + 1
+                );
                 continue;
             }
 
@@ -28,7 +31,10 @@ final class MappingValidator
                 $standardField = (string) ($mapping['standardField'] ?? '');
 
                 if (! StandardFields::exists($standardField)) {
-                    $errors[] = sprintf('Mapping row %d has an invalid GHL standard field.', $index + 1);
+                    $errors[] = sprintf(
+                        __('Mapping row %d has an invalid GHL standard field.', 'bricks-ghl-connector'),
+                        $index + 1
+                    );
                 }
 
                 if (in_array($standardField, ['email', 'phone'], true)) {
@@ -36,15 +42,21 @@ final class MappingValidator
                 }
             } elseif ($targetType === 'custom') {
                 if (trim((string) ($mapping['customFieldId'] ?? '')) === '') {
-                    $errors[] = sprintf('Mapping row %d is missing a GHL custom field ID.', $index + 1);
+                    $errors[] = sprintf(
+                        __('Mapping row %d is missing a GHL custom field ID.', 'bricks-ghl-connector'),
+                        $index + 1
+                    );
                 }
             } else {
-                $errors[] = sprintf('Mapping row %d has an invalid target type.', $index + 1);
+                $errors[] = sprintf(
+                    __('Mapping row %d has an invalid target type.', 'bricks-ghl-connector'),
+                    $index + 1
+                );
             }
         }
 
         if (! $hasContactIdentifier) {
-            $errors[] = 'Map at least one Bricks field to the GHL email or phone field.';
+            $errors[] = __('Map at least one Bricks field to the GHL email or phone field.', 'bricks-ghl-connector');
         }
 
         return $errors;
