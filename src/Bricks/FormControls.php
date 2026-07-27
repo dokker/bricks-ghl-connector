@@ -14,6 +14,7 @@ final class FormControls
         $controlGroups['ghl'] = [
             'title' => esc_html__('GHL', 'bricks-ghl-connector'),
             'tab' => 'content',
+            'required' => ['actions', 'contains', 'ghl'],
         ];
 
         return $controlGroups;
