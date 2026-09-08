@@ -62,3 +62,28 @@
 - Conversion tracking is client side: `assets/js/tracking.js` listens for `bricks/form/success` and pushes `{ event, form_id }`. Keep it that way unless offline conversion import or CAPI deduplication is actually needed, which is the only thing that would justify a server-built payload again.
 - The per-form tracking ID is rendered onto the form root as `data-bghl-tracking-id`, so the browser never has to look at the form response.
 - Bricks specific tracking code stays in `Bricks\TrackingScript` and `assets/js/tracking.js` so a different form builder only needs a new adapter.
+
+## Versioning and Changelog (required on every change)
+
+Every code change to this plugin must ship with a version bump and a changelog
+entry in the same commit. This is not optional and does not need to be asked for.
+
+1. Bump the version in **both** places in `bricks-ghl-connector.php`: the
+   `Version:` plugin header and `define('BGHL_CONNECTOR_VERSION', ...)`. The two
+   must always match, because the constant is the asset cache buster.
+2. Add an entry to `CHANGELOG.md` at the top, under a new
+   `## [x.y.z] - YYYY-MM-DD` heading, using Keep a Changelog sections
+   (`Added`, `Changed`, `Fixed`, `Removed`). Also add the compare link at the
+   bottom of the file.
+3. Semantic versioning:
+   - patch (`0.3.0` to `0.3.1`): bug fix, copy or docs change, refactor with no
+     behavior change.
+   - minor (`0.3.x` to `0.4.0`): new feature, new setting, new Bricks control,
+     new hook.
+   - major: breaking change, such as removing or renaming a stored setting key,
+     a per-form setting, or the `dataLayer` contract.
+4. If a stored option key or per-form setting shape changes, say so explicitly in
+   the changelog entry, because existing sites carry that data.
+5. Pure repository housekeeping that does not ship in the plugin ZIP
+   (`.gitignore`, CI config) does not need a version bump, but still gets a
+   changelog line if it changes how the plugin is built or released.
