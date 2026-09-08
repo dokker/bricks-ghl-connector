@@ -26,6 +26,8 @@
 - Global setting: default source.
 - Global setting: default tags.
 - Global setting: debug logging flag.
+- Global setting: dataLayer tracking flag.
+- Global setting: dataLayer event name.
 
 ## Per-Form Mapping Shape
 
@@ -45,6 +47,7 @@
       'customFieldId' => 'ghl_custom_field_id',
     ],
   ],
+  'ghlTrackingId' => 'contact-form',
   'ghlTags' => 'website-form,bricks-form',
   'ghlSource' => 'Website Bricks Form',
   'ghlFailBehavior' => 'block',
@@ -56,3 +59,6 @@
 - Do not log API tokens or full request headers.
 - Validation should require at least one mapped `email` or `phone` field.
 - The plugin should fail gracefully if Bricks is inactive.
+- Conversion tracking is client side: `assets/js/tracking.js` listens for `bricks/form/success` and pushes `{ event, form_id }`. Keep it that way unless offline conversion import or CAPI deduplication is actually needed, which is the only thing that would justify a server-built payload again.
+- The per-form tracking ID is rendered onto the form root as `data-bghl-tracking-id`, so the browser never has to look at the form response.
+- Bricks specific tracking code stays in `Bricks\TrackingScript` and `assets/js/tracking.js` so a different form builder only needs a new adapter.

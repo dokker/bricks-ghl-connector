@@ -9,6 +9,7 @@ use BricksGhlConnector\Admin\SettingsRepository;
 use BricksGhlConnector\Bricks\FormActionRegistrar;
 use BricksGhlConnector\Bricks\FormControls;
 use BricksGhlConnector\Bricks\FormSubmitHandler;
+use BricksGhlConnector\Bricks\TrackingScript;
 use BricksGhlConnector\GHL\Client;
 use BricksGhlConnector\GHL\ContactPayloadBuilder;
 use BricksGhlConnector\Mapping\FieldMapper;
@@ -54,7 +55,13 @@ final class Plugin
             $logger
         );
 
-        (new FormActionRegistrar(new FormControls(), $handler))->register();
+        $registrar = new FormActionRegistrar(
+            new FormControls(),
+            $handler,
+            new TrackingScript($settings)
+        );
+
+        $registrar->register();
     }
 
     private static function isBricksActive(): bool

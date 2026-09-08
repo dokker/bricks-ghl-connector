@@ -62,6 +62,16 @@ final class FormControls
             ],
         ];
 
+        $controls['ghlTrackingId'] = [
+            'tab' => 'content',
+            'group' => 'ghl',
+            'label' => esc_html__('Tracking ID (GTM)', 'bricks-ghl-connector'),
+            'type' => 'text',
+            'placeholder' => 'contact-form',
+            'description' => esc_html__('Pushed to the dataLayer as form_id, so this is the value to match on in Google Tag Manager. Falls back to the Bricks element ID when empty.', 'bricks-ghl-connector'),
+            'required' => ['actions', 'contains', 'ghl'],
+        ];
+
         $controls['ghlSource'] = [
             'tab' => 'content',
             'group' => 'ghl',
