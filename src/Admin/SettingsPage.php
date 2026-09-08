@@ -117,6 +117,25 @@ final class SettingsPage
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><?php echo esc_html__('dataLayer tracking', 'bricks-ghl-connector'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="<?php echo esc_attr($option); ?>[tracking_enabled]" value="1" <?php checked((bool) $settings['tracking_enabled']); ?>>
+                                <?php echo esc_html__('Push a dataLayer event when a Bricks form using the GHL action was submitted successfully.', 'bricks-ghl-connector'); ?>
+                            </label>
+                            <p class="description"><?php echo esc_html__('The event is pushed client side on the Bricks form success event. With the default On GHL error behavior a failed GHL call blocks it, so no conversion is counted.', 'bricks-ghl-connector'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="bghl-tracking-event-name"><?php echo esc_html__('dataLayer event name', 'bricks-ghl-connector'); ?></label>
+                        </th>
+                        <td>
+                            <input id="bghl-tracking-event-name" class="regular-text" type="text" name="<?php echo esc_attr($option); ?>[tracking_event_name]" value="<?php echo esc_attr((string) $settings['tracking_event_name']); ?>" placeholder="<?php echo esc_attr(SettingsRepository::DEFAULT_TRACKING_EVENT_NAME); ?>">
+                            <p class="description"><?php echo esc_html__('Use one stable event name for every form and filter on the form_id parameter inside Google Tag Manager.', 'bricks-ghl-connector'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><?php echo esc_html__('Debug logging', 'bricks-ghl-connector'); ?></th>
                         <td>
                             <label>

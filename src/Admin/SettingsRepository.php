@@ -9,6 +9,7 @@ use BricksGhlConnector\Support\Sanitizer;
 final class SettingsRepository
 {
     public const OPTION_NAME = 'bghl_connector_settings';
+    public const DEFAULT_TRACKING_EVENT_NAME = 'ghl_lead';
 
     /** @return array<string, mixed> */
     public function all(): array
@@ -56,6 +57,18 @@ final class SettingsRepository
         return (bool) $this->all()['debug_enabled'];
     }
 
+    public function isTrackingEnabled(): bool
+    {
+        return (bool) $this->all()['tracking_enabled'];
+    }
+
+    public function trackingEventName(): string
+    {
+        $eventName = sanitize_key((string) $this->all()['tracking_event_name']);
+
+        return $eventName !== '' ? $eventName : self::DEFAULT_TRACKING_EVENT_NAME;
+    }
+
     /** @return array<string, mixed> */
     public function defaults(): array
     {
@@ -65,6 +78,8 @@ final class SettingsRepository
             'default_source' => 'Website Bricks Form',
             'default_tags' => 'website-form',
             'debug_enabled' => false,
+            'tracking_enabled' => true,
+            'tracking_event_name' => self::DEFAULT_TRACKING_EVENT_NAME,
         ];
     }
 
@@ -84,7 +99,16 @@ final class SettingsRepository
             'default_source' => sanitize_text_field((string) ($input['default_source'] ?? 'Website Bricks Form')),
             'default_tags' => sanitize_text_field((string) ($input['default_tags'] ?? 'website-form')),
             'debug_enabled' => ! empty($input['debug_enabled']),
+            'tracking_enabled' => ! empty($input['tracking_enabled']),
+            'tracking_event_name' => $this->sanitizeEventName((string) ($input['tracking_event_name'] ?? '')),
         ];
+    }
+
+    private function sanitizeEventName(string $value): string
+    {
+        $eventName = sanitize_key($value);
+
+        return $eventName !== '' ? $eventName : self::DEFAULT_TRACKING_EVENT_NAME;
     }
 
     public function isApiTokenDefinedInConfig(): bool
