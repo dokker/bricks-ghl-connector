@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bricks GHL Connector
  * Description: Adds a GoHighLevel form action to Bricks Builder forms.
- * Version: 0.3.1
+ * Version: 0.3.2
  * Author: Vertical
  * Text Domain: bricks-ghl-connector
  * Requires PHP: 7.4
@@ -14,7 +14,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('BGHL_CONNECTOR_VERSION', '0.3.1');
+define('BGHL_CONNECTOR_VERSION', '0.3.2');
 define('BGHL_CONNECTOR_FILE', __FILE__);
 define('BGHL_CONNECTOR_PATH', plugin_dir_path(__FILE__));
 define('BGHL_CONNECTOR_URL', plugin_dir_url(__FILE__));

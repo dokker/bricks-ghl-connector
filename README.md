@@ -103,3 +103,8 @@ No custom HTML tag is needed in the container.
   contact.
 - The event is client side only. It fires when Bricks reports a successful
   submission, not when the GHL API confirmed the contact.
+
+## Updates
+
+Download the latest release from this URL:
+https://github.com/dokker/bricks-ghl-connector/releases/latest/download/bricks-ghl-connector.zip
