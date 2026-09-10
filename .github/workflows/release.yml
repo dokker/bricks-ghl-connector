@@ -1,0 +1,30 @@
+name: Build Release ZIP
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create clean ZIP
+        run: |
+          zip -r ../bricks-ghl-connector.zip . \
+            -x "*.git/*" \
+            -x ".gitignore" \
+            -x "node_modules/*" \
+            -x "vendor/*"
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ../bricks-ghl-connector.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
