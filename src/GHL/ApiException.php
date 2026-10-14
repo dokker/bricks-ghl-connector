@@ -32,19 +32,4 @@ final class ApiException extends RuntimeException
     {
         return $this->responseBody;
     }
-
-    public function isDuplicateContactError(): bool
-    {
-        $message = strtolower((string) ($this->responseBody['message'] ?? $this->getMessage()));
-        $matchingField = (string) ($this->responseBody['meta']['matchingField'] ?? '');
-
-        return strpos($message, 'duplicated contacts') !== false
-            || strpos($message, 'duplicate') !== false
-            || in_array($matchingField, ['email', 'phone'], true);
-    }
-
-    public function duplicateMatchingField(): string
-    {
-        return (string) ($this->responseBody['meta']['matchingField'] ?? '');
-    }
 }

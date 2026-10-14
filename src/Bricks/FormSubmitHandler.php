@@ -8,6 +8,7 @@ use BricksGhlConnector\Admin\SettingsRepository;
 use BricksGhlConnector\GHL\ApiException;
 use BricksGhlConnector\GHL\Client;
 use BricksGhlConnector\GHL\ContactPayloadBuilder;
+use BricksGhlConnector\GHL\NoteBuilder;
 use BricksGhlConnector\Mapping\FieldMapper;
 use BricksGhlConnector\Mapping\MappingValidator;
 use BricksGhlConnector\Support\Logger;
@@ -19,6 +20,7 @@ final class FormSubmitHandler
     private MappingValidator $validator;
     private FieldMapper $mapper;
     private ContactPayloadBuilder $payloadBuilder;
+    private NoteBuilder $noteBuilder;
     private Client $client;
     private Logger $logger;
 
@@ -27,6 +29,7 @@ final class FormSubmitHandler
         MappingValidator $validator,
         FieldMapper $mapper,
         ContactPayloadBuilder $payloadBuilder,
+        NoteBuilder $noteBuilder,
         Client $client,
         Logger $logger
     ) {
@@ -34,6 +37,7 @@ final class FormSubmitHandler
         $this->validator = $validator;
         $this->mapper = $mapper;
         $this->payloadBuilder = $payloadBuilder;
+        $this->noteBuilder = $noteBuilder;
         $this->client = $client;
         $this->logger = $logger;
     }
@@ -92,33 +96,72 @@ final class FormSubmitHandler
             return;
         }
 
-        $payload = $this->payloadBuilder->build($locationId, $source, $tags, $mapped);
+        $payload = $this->payloadBuilder->build($locationId, $source, $mapped);
 
         try {
-            $this->client->createContact($payload);
-            $this->logger->debug('GHL contact created from Bricks form.', [
+            $contact = $this->client->upsertContact($payload);
+            $this->logger->debug('GHL contact upserted from Bricks form.', [
+                'new_contact' => $contact['new'],
                 'mapped_standard_fields' => array_keys($mapped['standard']),
                 'custom_field_count' => count($mapped['customFields']),
             ]);
         } catch (ApiException $exception) {
-            $this->logger->error('GHL contact creation failed.', ['message' => $exception->getMessage()]);
-            $this->maybeSetFormError($form, $formSettings, $this->publicErrorMessageForException($exception));
+            $this->logger->error('GHL contact upsert failed.', ['message' => $exception->getMessage()]);
+            $this->maybeSetFormError($form, $formSettings, __('Could not submit the form to GoHighLevel.', 'bricks-ghl-connector'));
+
+            return;
+        }
+
+        $tags = array_values(array_unique($tags));
+
+        if ($tags !== []) {
+            try {
+                $this->client->addTags($contact['id'], $tags);
+            } catch (ApiException $exception) {
+                // The contact and the message are what matter, a missing tag is not worth failing the form.
+                $this->logger->error('GHL tag assignment failed.', ['message' => $exception->getMessage()]);
+            }
+        }
+
+        $note = $this->noteBuilder->build($source, $mapped['notes'], $this->fieldLabels($formSettings));
+
+        if ($note === '') {
+            return;
+        }
+
+        try {
+            $this->client->createNote($contact['id'], $note);
+        } catch (ApiException $exception) {
+            $this->logger->error('GHL note creation failed.', ['message' => $exception->getMessage()]);
+            $this->maybeSetFormError($form, $formSettings, __('Could not submit the form to GoHighLevel.', 'bricks-ghl-connector'));
         }
     }
 
-    private function publicErrorMessageForException(ApiException $exception): string
+    /**
+     * Bricks field ID => label, taken from the form element's field list.
+     *
+     * @param array<string, mixed> $formSettings
+     * @return array<string, string>
+     */
+    private function fieldLabels(array $formSettings): array
     {
-        if (! $exception->isDuplicateContactError()) {
-            return __('Could not submit the form to GoHighLevel.', 'bricks-ghl-connector');
+        $labels = [];
+        $fields = $formSettings['fields'] ?? [];
+
+        if (! is_array($fields)) {
+            return [];
         }
 
-        $matchingField = $exception->duplicateMatchingField();
+        foreach ($fields as $field) {
+            if (! is_array($field) || empty($field['id'])) {
+                continue;
+            }
 
-        if ($matchingField === 'phone') {
-            return __('This phone number is already subscribed.', 'bricks-ghl-connector');
+            $label = trim(wp_strip_all_tags((string) ($field['label'] ?? '')));
+            $labels[(string) $field['id']] = $label !== '' ? $label : (string) $field['id'];
         }
 
-        return __('This email address is already subscribed.', 'bricks-ghl-connector');
+        return $labels;
     }
 
     /**

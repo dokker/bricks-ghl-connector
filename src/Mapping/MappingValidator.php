@@ -47,7 +47,7 @@ final class MappingValidator
                         $index + 1
                     );
                 }
-            } else {
+            } elseif ($targetType !== 'note') {
                 $errors[] = sprintf(
                     __('Mapping row %d has an invalid target type.', 'bricks-ghl-connector'),
                     $index + 1

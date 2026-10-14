@@ -9,6 +9,8 @@
 - Per-form settings are stored inside the Bricks Form element settings so pages/templates carry their mapping during export/import.
 - Code, comments, settings keys, and internal UI labels are English.
 - The initial transport is the GHL Contacts API. Webhook delivery is a future extension.
+- Contacts are sent with `POST /contacts/upsert`, so repeat submissions with the same email or phone update the existing contact. Never send `tags` in the upsert payload, because it overwrites the contact's tags; add them with `POST /contacts/{id}/tags`.
+- The submitted message is stored as a contact note (`targetType` `note`), one new note per submission.
 - Every submitted contact should receive a tag indicating it came from a website form.
 
 ## Architecture
@@ -45,6 +47,12 @@
       'targetType' => 'custom',
       'standardField' => '',
       'customFieldId' => 'ghl_custom_field_id',
+    ],
+    [
+      'bricksFieldId' => 'message-field-id',
+      'targetType' => 'note',
+      'standardField' => '',
+      'customFieldId' => '',
     ],
   ],
   'ghlTrackingId' => 'contact-form',

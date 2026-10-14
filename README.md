@@ -42,10 +42,26 @@ When these constants are defined, they override the values saved on the plugin s
 1. Edit a Bricks Form element.
 2. In `Actions after successful form submit`, select `GoHighLevel`.
 3. Open the `GHL` control group.
-4. Add field mappings from Bricks fields to GHL standard fields or custom field IDs.
+4. Add field mappings from Bricks fields to GHL standard fields, custom field IDs, or the contact note.
 5. Save the page or template.
 
 At least one field must be mapped to `email` or `phone`.
+
+### Repeat submissions and messages
+
+Contacts are sent to the GHL `POST /contacts/upsert` endpoint, so a visitor can
+submit the same form again with the same email or phone. GHL then updates the
+existing contact, following the location's "Allow Duplicate Contact" setting,
+instead of rejecting the submission.
+
+Map the message (textarea) field to the `Contact note (message)` target type.
+Every submission is added as a new note on the contact, headed with the source and
+labelled with the Bricks field label, so earlier messages are never overwritten.
+Several fields can be mapped to the note; they end up in the same note.
+
+Tags are added with a separate `POST /contacts/{id}/tags` request, because upsert
+would replace the tags the contact already has. A failed tag request is only
+logged. A failed note request follows the form's error behavior setting.
 
 ## Per-Form Settings
 

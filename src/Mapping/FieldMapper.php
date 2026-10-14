@@ -9,12 +9,13 @@ final class FieldMapper
     /**
      * @param array<string, mixed> $submittedFields
      * @param array<int, array<string, mixed>> $mappings
-     * @return array{standard: array<string, string>, customFields: array<int, array{id: string, value: string}>}
+     * @return array{standard: array<string, string>, customFields: array<int, array{id: string, value: string}>, notes: array<int, array{bricksFieldId: string, value: string}>}
      */
     public function map(array $submittedFields, array $mappings): array
     {
         $standard = [];
         $customFields = [];
+        $notes = [];
 
         foreach ($mappings as $mapping) {
             $bricksFieldId = trim((string) ($mapping['bricksFieldId'] ?? ''));
@@ -53,11 +54,19 @@ final class FieldMapper
                     ];
                 }
             }
+
+            if (($mapping['targetType'] ?? '') === 'note') {
+                $notes[] = [
+                    'bricksFieldId' => $bricksFieldId,
+                    'value' => $value,
+                ];
+            }
         }
 
         return [
             'standard' => $standard,
             'customFields' => $customFields,
+            'notes' => $notes,
         ];
     }
 

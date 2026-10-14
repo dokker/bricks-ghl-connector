@@ -45,7 +45,9 @@ final class FormControls
                     'options' => [
                         'standard' => esc_html__('Standard field', 'bricks-ghl-connector'),
                         'custom' => esc_html__('Custom field', 'bricks-ghl-connector'),
+                        'note' => esc_html__('Contact note (message)', 'bricks-ghl-connector'),
                     ],
+                    'description' => esc_html__('Use "Contact note" for the message field: every submission is added as a new note, so repeated messages from the same contact are kept.', 'bricks-ghl-connector'),
                     'default' => 'standard',
                 ],
                 'standardField' => [

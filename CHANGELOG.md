@@ -5,6 +5,29 @@ All notable changes to this plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-10-14
+
+### Added
+
+- New field mapping target type `Contact note (message)` (stored as
+  `targetType` `note` in `ghlFieldMappings`). The mapped values are added as a new
+  note on the contact on every submission, labelled with the Bricks field labels.
+  Additive: existing `standard` and `custom` rows are unchanged.
+- `GHL\NoteBuilder` (loaded from the main plugin file) and `Client::addTags()` / `Client::createNote()`.
+
+### Changed
+
+- Contacts are sent to `POST /contacts/upsert` instead of `POST /contacts/`, so the
+  same email or phone can submit the form again. The existing contact is updated
+  according to the location's "Allow Duplicate Contact" setting.
+- Tags are added with `POST /contacts/{id}/tags` after the upsert instead of in the
+  contact payload, so existing tags on the contact are kept.
+
+### Removed
+
+- The "This email address / phone number is already subscribed" form errors and
+  the duplicate detection helpers in `ApiException`, since duplicates no longer fail.
+
 ## [0.3.2] - 2026-09-10
 
 ### Added
@@ -67,6 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   settings page, field mapping to GHL standard and custom fields, default source
   and tags, error behavior and debug logging.
 
+[0.4.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.3.2...v0.4.0
+[0.3.2]: https://github.com/dokker/bricks-ghl-connector/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/dokker/bricks-ghl-connector/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/dokker/bricks-ghl-connector/compare/v0.2.0...v0.2.1

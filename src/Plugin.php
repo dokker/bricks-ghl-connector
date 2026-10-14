@@ -12,6 +12,7 @@ use BricksGhlConnector\Bricks\FormSubmitHandler;
 use BricksGhlConnector\Bricks\TrackingScript;
 use BricksGhlConnector\GHL\Client;
 use BricksGhlConnector\GHL\ContactPayloadBuilder;
+use BricksGhlConnector\GHL\NoteBuilder;
 use BricksGhlConnector\Mapping\FieldMapper;
 use BricksGhlConnector\Mapping\MappingValidator;
 use BricksGhlConnector\Support\Logger;
@@ -51,6 +52,7 @@ final class Plugin
             new MappingValidator(),
             new FieldMapper(),
             new ContactPayloadBuilder(),
+            new NoteBuilder(),
             new Client($settings, $logger),
             $logger
         );
