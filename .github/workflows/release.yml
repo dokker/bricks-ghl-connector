@@ -14,17 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # git archive honors export-ignore in .gitattributes and puts every file
+      # under bricks-ghl-connector/, so WordPress installs it into that folder.
       - name: Create clean ZIP
-        run: |
-          zip -r ../bricks-ghl-connector.zip . \
-            -x "*.git/*" \
-            -x ".gitignore" \
-            -x "node_modules/*" \
-            -x "vendor/*"
+        run: git archive --format=zip --prefix=bricks-ghl-connector/ -o bricks-ghl-connector.zip HEAD
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v3
         with:
-          files: ../bricks-ghl-connector.zip
+          files: bricks-ghl-connector.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
