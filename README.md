@@ -59,6 +59,25 @@ Every submission is added as a new note on the contact, headed with the source a
 labelled with the Bricks field label, so earlier messages are never overwritten.
 Several fields can be mapped to the note; they end up in the same note.
 
+| Question | Answer |
+| --- | --- |
+| Bricks field type | `Textarea` (any text field works, a textarea suits long messages) |
+| Mapping target type | `Contact note (message)` |
+| Where it shows in GHL | `Contacts > open the contact > Notes` tab, one note per submission |
+
+A note looks like this:
+
+```text
+Website form submission: Website Bricks Form
+
+Message:
+Hello, I would like an offer.
+```
+
+Do not map the message to a GHL custom field unless you only need the latest
+message: a custom field holds a single value, so the next submission from the same
+contact overwrites it. Notes keep the full history.
+
 Tags are added with a separate `POST /contacts/{id}/tags` request, because upsert
 would replace the tags the contact already has. A failed tag request is only
 logged. A failed note request follows the form's error behavior setting.
