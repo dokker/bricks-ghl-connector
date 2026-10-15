@@ -16,6 +16,7 @@ use BricksGhlConnector\GHL\NoteBuilder;
 use BricksGhlConnector\Mapping\FieldMapper;
 use BricksGhlConnector\Mapping\MappingValidator;
 use BricksGhlConnector\Support\Logger;
+use BricksGhlConnector\Updates\GitHubUpdater;
 
 final class Plugin
 {
@@ -25,6 +26,7 @@ final class Plugin
         $logger = new Logger($settings);
 
         (new SettingsPage($settings))->register();
+        (new GitHubUpdater(BGHL_CONNECTOR_FILE, $logger))->register();
 
         add_action('after_setup_theme', static function () use ($settings, $logger): void {
             self::registerBricksIntegration($settings, $logger);

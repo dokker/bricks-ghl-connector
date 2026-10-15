@@ -14,6 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Fails the release when the tag, the plugin header, the version constant
+      # and CHANGELOG.md disagree. The plugin's updater reads info.json from
+      # releases/latest/download/, which is not rate limited like the REST API.
+      - name: Build update info
+        run: python3 .github/scripts/build-info.py "$GITHUB_REF_NAME" > info.json
+
       # git archive honors export-ignore in .gitattributes and puts every file
       # under bricks-ghl-connector/, so WordPress installs it into that folder.
       - name: Create clean ZIP
@@ -22,6 +28,8 @@ jobs:
       - name: Upload to Release
         uses: softprops/action-gh-release@v3
         with:
-          files: bricks-ghl-connector.zip
+          files: |
+            bricks-ghl-connector.zip
+            info.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

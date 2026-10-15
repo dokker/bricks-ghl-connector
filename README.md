@@ -141,5 +141,26 @@ No custom HTML tag is needed in the container.
 
 ## Updates
 
+From version 0.5.0 on, new releases show up in the WordPress admin under
+`Dashboard > Updates` and on the Plugins screen, and install with the normal
+update button. The plugin checks the `info.json` asset of the latest GitHub
+release every 12 hours; `Dashboard > Updates > Check again` checks immediately.
+
+The plugin must be installed in the `wp-content/plugins/bricks-ghl-connector/`
+folder, which is where the release ZIP installs it. Versions before 0.5.0 have to
+be updated to 0.5.0 by hand once.
+
+### Releasing
+
+1. Bump `Version:` and `BGHL_CONNECTOR_VERSION` in `bricks-ghl-connector.php` and
+   add the `CHANGELOG.md` entry.
+2. Push a `vX.Y.Z` tag. The release workflow checks that the tag, both versions
+   and the changelog agree, then uploads `bricks-ghl-connector.zip` and
+   `info.json` to the GitHub release.
+
+Drafts and pre-releases are not offered as updates.
+
+### Manual download
+
 Download the latest release from this URL:
 https://github.com/dokker/bricks-ghl-connector/releases/latest/download/bricks-ghl-connector.zip

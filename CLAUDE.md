@@ -20,6 +20,7 @@
 - `Mapping`: Bricks submitted field IDs to GHL standard fields and custom field IDs.
 - `GHL`: HTTP client and contact payload builder.
 - `Support`: logging and sanitization utilities.
+- `Updates`: WordPress update integration that reads the `info.json` asset of the latest GitHub release.
 
 ## GHL Configuration
 
@@ -70,6 +71,7 @@
 - Conversion tracking is client side: `assets/js/tracking.js` listens for `bricks/form/success` and pushes `{ event, form_id }`. Keep it that way unless offline conversion import or CAPI deduplication is actually needed, which is the only thing that would justify a server-built payload again.
 - The per-form tracking ID is rendered onto the form root as `data-bghl-tracking-id`, so the browser never has to look at the form response.
 - Bricks specific tracking code stays in `Bricks\TrackingScript` and `assets/js/tracking.js` so a different form builder only needs a new adapter.
+- Updates come from GitHub releases through the `Update URI` header and `Updates\GitHubUpdater`. The updater reads `releases/latest/download/info.json`, never the GitHub REST API, because of its 60 requests per hour per IP limit. `.github/scripts/build-info.py` builds that file in the release workflow and fails the release when the tag and the versions disagree.
 
 ## Versioning and Changelog (required on every change)
 

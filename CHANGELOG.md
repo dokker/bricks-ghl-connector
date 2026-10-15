@@ -5,13 +5,30 @@ All notable changes to this plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.2] - 2026-10-15
+## [0.5.0] - 2026-10-15
+
+### Added
+
+- Updates from GitHub releases: new versions show up under `Dashboard > Updates`
+  and on the Plugins screen, and install with the normal WordPress update button.
+  `Updates\GitHubUpdater` reads `info.json` from the latest release (a plain file
+  download, so the GitHub API rate limit does not apply) and caches it for 12
+  hours, or 1 hour after a failed request. `Check again` bypasses the cache.
+- `View details` shows the plugin description and the last five changelog entries.
+- Plugin headers `Update URI` (so wordpress.org never offers an update for this
+  slug) and `Requires at least: 5.8`.
+- The release workflow builds `info.json` with `.github/scripts/build-info.py` and
+  uploads it next to the ZIP. The build fails if the tag, the `Version` header,
+  `BGHL_CONNECTOR_VERSION` and `CHANGELOG.md` disagree.
+
+New site transient `bghl_connector_update_info`. No stored option or per-form
+setting changes.
 
 ### Changed
 
 - README: documents which Bricks field type and mapping target to use for the
   message, and that it appears in the contact's Notes tab in GHL (one note per
-  submission). No code or stored setting changes.
+  submission). This was prepared as 0.4.2, which was never released.
 
 ## [0.4.1] - 2026-10-14
 
@@ -108,7 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   settings page, field mapping to GHL standard and custom fields, default source
   and tags, error behavior and debug logging.
 
-[0.4.2]: https://github.com/dokker/bricks-ghl-connector/compare/v0.4.1...v0.4.2
+[0.5.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/dokker/bricks-ghl-connector/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/dokker/bricks-ghl-connector/compare/v0.3.1...v0.3.2
