@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BricksGhlConnector\Admin;
 
+use BricksGhlConnector\Support\PhoneNormalizer;
+
 final class SettingsPage
 {
     private SettingsRepository $settings;
@@ -114,6 +116,37 @@ final class SettingsPage
                         <td>
                             <input id="bghl-default-tags" class="regular-text" type="text" name="<?php echo esc_attr($option); ?>[default_tags]" value="<?php echo esc_attr((string) $settings['default_tags']); ?>">
                             <p class="description"><?php echo esc_html__('Comma-separated tags added to every contact created from a Bricks form.', 'bricks-ghl-connector'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="bghl-phone-default-country"><?php echo esc_html__('Phone number format', 'bricks-ghl-connector'); ?></label>
+                        </th>
+                        <td>
+                            <select id="bghl-phone-default-country" name="<?php echo esc_attr($option); ?>[phone_default_country]">
+                                <option value="" <?php selected((string) $settings['phone_default_country'], ''); ?>><?php echo esc_html__('Send as submitted', 'bricks-ghl-connector'); ?></option>
+                                <?php foreach (PhoneNormalizer::countries() as $code => $label) : ?>
+                                    <option value="<?php echo esc_attr($code); ?>" <?php selected((string) $settings['phone_default_country'], $code); ?>><?php echo esc_html(sprintf(
+                                        /* translators: %s: country, e.g. "Hungary (+36)" */
+                                        __('Normalize to E.164, default country: %s', 'bricks-ghl-connector'),
+                                        $label
+                                    )); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description"><?php echo esc_html__('Converts national formats such as 06 30 123 4567 to +36301234567, so GHL matches repeat submissions to the same contact by phone. Numbers that cannot be converted are sent unchanged and logged as a warning.', 'bricks-ghl-connector'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="bghl-name-order"><?php echo esc_html__('Full name order', 'bricks-ghl-connector'); ?></label>
+                        </th>
+                        <td>
+                            <select id="bghl-name-order" name="<?php echo esc_attr($option); ?>[name_order]">
+                                <?php foreach (SettingsRepository::nameOrderOptions() as $value => $label) : ?>
+                                    <option value="<?php echo esc_attr($value); ?>" <?php selected((string) $settings['name_order'], $value); ?>><?php echo esc_html($label); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description"><?php echo esc_html__('Only used when a form maps the Full name field but neither First name nor Last name. With Family name first, the last word becomes the first name and the rest the last name; Given name first leaves the splitting to GHL.', 'bricks-ghl-connector'); ?></p>
                         </td>
                     </tr>
                     <tr>

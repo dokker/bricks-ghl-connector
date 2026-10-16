@@ -12,14 +12,23 @@
 - Contacts are sent with `POST /contacts/upsert`, so repeat submissions with the same email or phone update the existing contact. Never send `tags` in the upsert payload, because it overwrites the contact's tags; add them with `POST /contacts/{id}/tags`.
 - The submitted message is stored as a contact note (`targetType` `note`), one new note per submission.
 - Every submitted contact should receive a tag indicating it came from a website form.
+- Field normalization is off by default and controlled by global settings, never by
+  site specific code: `phone_default_country` (empty = send as submitted, `HU` =
+  E.164) and `name_order` (`given_first` = send the full name only, `family_first`
+  = also split it into `firstName` / `lastName`). `dateOfBirth` is always sent as
+  `Y-m-d`, or left out when it cannot be parsed.
+- `bghl_connector/after_submit` is the integration point for external storage of
+  the GHL result (status, contact ID, failed step). It fires on every outcome;
+  keep its `$result` keys stable, removing or renaming one is a breaking change.
 
 ## Architecture
 
 - `Admin`: site-level settings, settings repository, option sanitization.
 - `Bricks`: Bricks form action registration, control group registration, submit hook handling.
 - `Mapping`: Bricks submitted field IDs to GHL standard fields and custom field IDs.
+- `Mapping\ContactFieldNormalizer`: applies the date, phone and name normalization to mapped standard fields.
 - `GHL`: HTTP client and contact payload builder.
-- `Support`: logging and sanitization utilities.
+- `Support`: logging, sanitization, `PhoneNormalizer` (one rule per country) and `DateNormalizer`.
 - `Updates`: WordPress update integration that reads the `info.json` asset of the latest GitHub release.
 
 ## GHL Configuration
@@ -31,6 +40,8 @@
 - Global setting: debug logging flag.
 - Global setting: dataLayer tracking flag.
 - Global setting: dataLayer event name.
+- Global setting: phone default country (`phone_default_country`).
+- Global setting: full name order (`name_order`).
 
 ## Per-Form Mapping Shape
 
@@ -67,6 +78,10 @@
 
 - Do not log API tokens or full request headers.
 - Validation should require at least one mapped `email` or `phone` field.
+- Normalization never blocks a submission: an unparsable date is dropped, an
+  invalid phone is sent raw, both with a warning that does not contain the value.
+- `bin/smoke.php` (`wp eval-file`) is the offline check for normalization and the
+  payload builder. There is no test framework; extend it when the payload changes.
 - The plugin should fail gracefully if Bricks is inactive.
 - Conversion tracking is client side: `assets/js/tracking.js` listens for `bricks/form/success` and pushes `{ event, form_id }`. Keep it that way unless offline conversion import or CAPI deduplication is actually needed, which is the only thing that would justify a server-built payload again.
 - The per-form tracking ID is rendered onto the form root as `data-bghl-tracking-id`, so the browser never has to look at the form response.

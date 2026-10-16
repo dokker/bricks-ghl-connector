@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bricks GHL Connector
  * Description: Adds a GoHighLevel form action to Bricks Builder forms.
- * Version: 0.5.0
+ * Version: 0.6.0
  * Author: Vertical
  * Text Domain: bricks-ghl-connector
  * Requires at least: 5.8
@@ -16,18 +16,21 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('BGHL_CONNECTOR_VERSION', '0.5.0');
+define('BGHL_CONNECTOR_VERSION', '0.6.0');
 define('BGHL_CONNECTOR_FILE', __FILE__);
 define('BGHL_CONNECTOR_PATH', plugin_dir_path(__FILE__));
 define('BGHL_CONNECTOR_URL', plugin_dir_url(__FILE__));
 
 require_once BGHL_CONNECTOR_PATH . 'src/Support/Sanitizer.php';
 require_once BGHL_CONNECTOR_PATH . 'src/Support/Logger.php';
+require_once BGHL_CONNECTOR_PATH . 'src/Support/PhoneNormalizer.php';
+require_once BGHL_CONNECTOR_PATH . 'src/Support/DateNormalizer.php';
 require_once BGHL_CONNECTOR_PATH . 'src/Admin/SettingsRepository.php';
 require_once BGHL_CONNECTOR_PATH . 'src/Admin/SettingsPage.php';
 require_once BGHL_CONNECTOR_PATH . 'src/Mapping/StandardFields.php';
 require_once BGHL_CONNECTOR_PATH . 'src/Mapping/MappingValidator.php';
 require_once BGHL_CONNECTOR_PATH . 'src/Mapping/FieldMapper.php';
+require_once BGHL_CONNECTOR_PATH . 'src/Mapping/ContactFieldNormalizer.php';
 require_once BGHL_CONNECTOR_PATH . 'src/GHL/ApiException.php';
 require_once BGHL_CONNECTOR_PATH . 'src/GHL/Client.php';
 require_once BGHL_CONNECTOR_PATH . 'src/GHL/ContactPayloadBuilder.php';

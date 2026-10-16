@@ -13,9 +13,12 @@ use BricksGhlConnector\Bricks\TrackingScript;
 use BricksGhlConnector\GHL\Client;
 use BricksGhlConnector\GHL\ContactPayloadBuilder;
 use BricksGhlConnector\GHL\NoteBuilder;
+use BricksGhlConnector\Mapping\ContactFieldNormalizer;
 use BricksGhlConnector\Mapping\FieldMapper;
 use BricksGhlConnector\Mapping\MappingValidator;
+use BricksGhlConnector\Support\DateNormalizer;
 use BricksGhlConnector\Support\Logger;
+use BricksGhlConnector\Support\PhoneNormalizer;
 use BricksGhlConnector\Updates\GitHubUpdater;
 
 final class Plugin
@@ -53,6 +56,7 @@ final class Plugin
             $settings,
             new MappingValidator(),
             new FieldMapper(),
+            new ContactFieldNormalizer(new PhoneNormalizer(), new DateNormalizer()),
             new ContactPayloadBuilder(),
             new NoteBuilder(),
             new Client($settings, $logger),

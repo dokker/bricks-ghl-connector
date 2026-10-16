@@ -5,6 +5,41 @@ All notable changes to this plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-10-16
+
+### Added
+
+- `Date of birth` standard field (`dateOfBirth`). Dates are sent as `Y-m-d`;
+  `Y.m.d`, `Y.m.d.`, `Y. m. d.`, `Y/m/d`, `d.m.Y` and `d/m/Y` typed into a text
+  field are converted. An unparsable or impossible date is left out of the
+  request and logged as a warning, the submission still goes through.
+- Phone number normalization to E.164 (`Support\PhoneNormalizer`), with Hungary
+  as the first country: `06 30 123 4567`, `0036301234567`, `36 30 123 4567` and
+  `301234567` become `+36301234567`, so the upsert matches the same contact by
+  phone. Mobile numbers (`20`, `30`, `31`, `50`, `70`) and `21` need 9 digits
+  after `+36`, every other area code 8. A number that is still invalid is sent
+  unchanged and logged as a warning.
+- Splitting the full name in family-name-first order: with `name_order` set to
+  `family_first` and only `Full name` mapped, the last word is sent as
+  `firstName` and the rest as `lastName`, next to `name`.
+- `bghl_connector/after_submit` action with the submission result (`status`,
+  `contact_id`, `is_new`, `failed_step`, `error`, `tracking_id`, `submitted_at`),
+  fired on every outcome, including failed tag and note requests.
+- `bghl_connector/contact_payload` filter for the upsert payload. A `tags` key is
+  removed after the filter.
+- `Logger::warning()`, always written like errors.
+- `bin/smoke.php`, an offline check run with `wp eval-file`. Excluded from the
+  release ZIP through `.gitattributes`.
+
+New stored option keys in `bghl_connector_settings`:
+
+- `phone_default_country`: `''` (default, send as submitted) or `HU`.
+- `name_order`: `given_first` (default, previous behavior) or `family_first`.
+
+Existing sites keep their current behavior until these are changed. No per-form
+setting changes; `dateOfBirth` is a new value for the existing `standardField`
+mapping key.
+
 ## [0.5.0] - 2026-10-15
 
 ### Added
@@ -125,6 +160,7 @@ setting changes.
   settings page, field mapping to GHL standard and custom fields, default source
   and tags, error behavior and debug logging.
 
+[0.6.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/dokker/bricks-ghl-connector/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/dokker/bricks-ghl-connector/compare/v0.3.2...v0.4.0

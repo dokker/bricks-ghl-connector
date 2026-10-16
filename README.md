@@ -20,6 +20,9 @@ You can configure it in the WordPress admin:
 2. Enter the `GHL API token`.
 3. Enter the `Location ID`.
 4. Set default source, default tags, and optional debug logging.
+5. Optionally set `Phone number format` and `Full name order` (see
+   [Field normalization](#field-normalization)). Both are off by default, so
+   values are sent as submitted.
 
 ## wp-config.php Configuration
 
@@ -81,6 +84,121 @@ contact overwrites it. Notes keep the full history.
 Tags are added with a separate `POST /contacts/{id}/tags` request, because upsert
 would replace the tags the contact already has. A failed tag request is only
 logged. A failed note request follows the form's error behavior setting.
+
+## Field normalization
+
+### Date of birth
+
+Map a field to the `Date of birth` standard field (`dateOfBirth` in GHL). The
+Bricks `Date` field already sends `2005-03-14`. A date typed into a text field is
+accepted in these forms and sent as `Y-m-d`:
+
+`2005-03-14`, `2005.03.14`, `2005.03.14.`, `2005. 03. 14.`, `2005/03/14`,
+`14.03.2005`, `14/03/2005`
+
+A value that cannot be parsed, or an impossible date such as `2005-02-30`, is
+left out of the request and logged as a warning, because GHL would reject the
+whole contact for an invalid date. The submission still goes through.
+
+### Phone number format
+
+`Settings > Bricks GHL Connector > Phone number format` (option key
+`phone_default_country`, default empty = send as submitted).
+
+With `Hungary (+36)`, national formats are converted to E.164, so GHL matches
+repeat submissions to the same contact by phone:
+
+| Submitted | Sent |
+| --- | --- |
+| `06 30 123 4567` | `+36301234567` |
+| `+36-30-123-4567` | `+36301234567` |
+| `0036301234567` | `+36301234567` |
+| `301234567` | `+36301234567` |
+| `36 30 123 4567` | `+36301234567` |
+| `(06-1) 234-5678` | `+3612345678` |
+| `+44 20 7946 0958` | `+442079460958` (foreign numbers are kept) |
+
+Spaces, hyphens, parentheses and slashes are removed. The part after `+36` must
+be 9 digits after a mobile prefix (`20`, `30`, `31`, `50`, `70`) or `21`, and 8
+digits after any other area code, so a mobile number typed one digit short
+(`06 30 123 456`) is not accepted. A number that is not valid is sent unchanged
+and logged as a warning, because the phone may be the only contact identifier.
+The log does not contain the number.
+
+### Full name order
+
+`Settings > Bricks GHL Connector > Full name order` (option key `name_order`,
+`given_first` by default).
+
+Only used when a form maps `Full name` but neither `First name` nor `Last name`.
+With `Family name first` the last word becomes the first name and everything
+before it the last name, so the GHL greeting uses the given name:
+
+| Full name | First name | Last name |
+| --- | --- | --- |
+| `Nagy Dénes` | `Dénes` | `Nagy` |
+| `Kovácsné Szabó Anna` | `Anna` | `Kovácsné Szabó` |
+| `Péter` | | `Péter` |
+
+The full name is sent as well. `Given name first` sends only the full name and
+leaves the splitting to GHL, as before.
+
+## Developer hooks
+
+### `bghl_connector/after_submit`
+
+Fires once per submission of a form that uses the GHL action, on every outcome.
+Use it to store the GHL status and contact ID next to your own copy of the
+submission.
+
+| Key | Type | Value |
+| --- | --- | --- |
+| `status` | `string` | `success` (the contact was upserted), `failed` (configuration error or the upsert failed), `skipped` (the visitor submitted no email, phone or name) |
+| `contact_id` | `?string` | GHL contact ID, set when `status` is `success` |
+| `is_new` | `?bool` | Whether GHL created a new contact |
+| `failed_step` | `?string` | `validation`, `upsert`, `tags` or `note`; `null` when everything worked |
+| `error` | `?string` | Error message for `failed_step`, never contains the API token |
+| `tracking_id` | `string` | Per-form `Tracking ID (GTM)`, or the Bricks element ID |
+| `submitted_at` | `string` | ISO 8601 time in UTC, e.g. `2026-10-16T12:00:00+00:00` |
+
+A failed tag or note request keeps `status` at `success`, because the contact
+exists; `failed_step` tells which step failed. If both fail, `failed_step` is
+`note`.
+
+```php
+add_action('bghl_connector/after_submit', static function (array $result, $form): void {
+    $submissionId = method_exists($form, 'get_submission_id') ? $form->get_submission_id() : null;
+
+    my_submissions_store_ghl_result($submissionId, [
+        'ghl_status' => $result['status'],
+        'ghl_contact_id' => $result['contact_id'],
+        'ghl_failed_step' => $result['failed_step'],
+        'ghl_error' => $result['error'],
+    ]);
+}, 10, 2);
+```
+
+### `bghl_connector/contact_payload`
+
+Filters the upsert payload right before it is sent. A `tags` key is removed
+after the filter, because upsert would replace the contact's existing tags.
+
+```php
+add_filter('bghl_connector/contact_payload', static function (array $payload, $form): array {
+    $payload['companyName'] = $payload['companyName'] ?? 'Private person';
+
+    return $payload;
+}, 10, 2);
+```
+
+### Smoke check
+
+`bin/smoke.php` checks the normalization and the payload builder offline, without
+calling GHL. It is not part of the release ZIP.
+
+```bash
+wp eval-file wp-content/plugins/bricks-ghl-connector/bin/smoke.php
+```
 
 ## Per-Form Settings
 

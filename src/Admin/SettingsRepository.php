@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace BricksGhlConnector\Admin;
 
+use BricksGhlConnector\Support\PhoneNormalizer;
 use BricksGhlConnector\Support\Sanitizer;
 
 final class SettingsRepository
 {
     public const OPTION_NAME = 'bghl_connector_settings';
     public const DEFAULT_TRACKING_EVENT_NAME = 'ghl_lead';
+    public const NAME_ORDER_GIVEN_FIRST = 'given_first';
+    public const NAME_ORDER_FAMILY_FIRST = 'family_first';
 
     /** @return array<string, mixed> */
     public function all(): array
@@ -69,6 +72,26 @@ final class SettingsRepository
         return $eventName !== '' ? $eventName : self::DEFAULT_TRACKING_EVENT_NAME;
     }
 
+    /** ISO country code used to normalize phone numbers, or '' when normalization is off. */
+    public function phoneDefaultCountry(): string
+    {
+        return $this->sanitizePhoneCountry((string) $this->all()['phone_default_country']);
+    }
+
+    public function nameOrder(): string
+    {
+        return $this->sanitizeNameOrder((string) $this->all()['name_order']);
+    }
+
+    /** @return array<string, string> */
+    public static function nameOrderOptions(): array
+    {
+        return [
+            self::NAME_ORDER_GIVEN_FIRST => __('Given name first (John Smith)', 'bricks-ghl-connector'),
+            self::NAME_ORDER_FAMILY_FIRST => __('Family name first (Nagy Dénes)', 'bricks-ghl-connector'),
+        ];
+    }
+
     /** @return array<string, mixed> */
     public function defaults(): array
     {
@@ -80,6 +103,8 @@ final class SettingsRepository
             'debug_enabled' => false,
             'tracking_enabled' => true,
             'tracking_event_name' => self::DEFAULT_TRACKING_EVENT_NAME,
+            'phone_default_country' => '',
+            'name_order' => self::NAME_ORDER_GIVEN_FIRST,
         ];
     }
 
@@ -101,6 +126,8 @@ final class SettingsRepository
             'debug_enabled' => ! empty($input['debug_enabled']),
             'tracking_enabled' => ! empty($input['tracking_enabled']),
             'tracking_event_name' => $this->sanitizeEventName((string) ($input['tracking_event_name'] ?? '')),
+            'phone_default_country' => $this->sanitizePhoneCountry((string) ($input['phone_default_country'] ?? '')),
+            'name_order' => $this->sanitizeNameOrder((string) ($input['name_order'] ?? '')),
         ];
     }
 
@@ -109,6 +136,18 @@ final class SettingsRepository
         $eventName = sanitize_key($value);
 
         return $eventName !== '' ? $eventName : self::DEFAULT_TRACKING_EVENT_NAME;
+    }
+
+    private function sanitizePhoneCountry(string $value): string
+    {
+        $country = strtoupper(trim($value));
+
+        return PhoneNormalizer::supports($country) ? $country : '';
+    }
+
+    private function sanitizeNameOrder(string $value): string
+    {
+        return $value === self::NAME_ORDER_FAMILY_FIRST ? self::NAME_ORDER_FAMILY_FIRST : self::NAME_ORDER_GIVEN_FIRST;
     }
 
     public function isApiTokenDefinedInConfig(): bool

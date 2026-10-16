@@ -15,6 +15,7 @@ final class StandardFields
             'name' => 'Full name',
             'email' => 'Email',
             'phone' => 'Phone',
+            'dateOfBirth' => 'Date of birth',
             'address1' => 'Address',
             'city' => 'City',
             'state' => 'State',
